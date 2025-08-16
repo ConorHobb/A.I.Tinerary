@@ -2,7 +2,9 @@
 import type { ItineraryDay, Activity } from './types';
 
 function parseValue(text: string, key: string): string {
-    const regex = new RegExp(`\\*\\*${key}:\\*\\*\\s*([^\\*\\n\\r]*)`);
+    if (!text) return '';
+    // This regex looks for a key like **Cost:** and captures the value after it until the end of the line.
+    const regex = new RegExp(`\\*\\*${key}:\\*\\*\\s*([^\\n\\r]*)`);
     const match = text.match(regex);
     return match && match[1] ? match[1].trim() : '';
 }
@@ -31,20 +33,23 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
 
     const activities: Activity[] = [];
     
-    const activityChunks = section.split(/-\s+\*\*/).filter(s => s.trim());
-    activityChunks.shift(); // Remove the day title part
-
-    for (const chunk of activityChunks) {
-      const fullActivityText = `- **${chunk}`;
+    // Group lines by activity. Each activity starts with '- **'
+    const activityTextBlocks = section.split(/^\s*-\s+\*\*/m).filter(s => s.trim());
+    activityTextBlocks.shift(); // The first element is the day title, so we skip it.
+    
+    for (const block of activityTextBlocks) {
+      const fullActivityText = `- **${block}`;
+      const activityLines = block.trim().split('\n');
       
-      const nameMatch = chunk.match(/^(.*?):/);
+      const firstLine = activityLines[0];
+      const nameMatch = firstLine.match(/^(.*?):/);
       if (!nameMatch) continue;
-      const name = nameMatch[1].trim();
       
-      const categoryMatch = chunk.match(/\((.*?)\)/);
+      const name = nameMatch[1].trim();
+      const categoryMatch = firstLine.match(/\((.*?)\)/);
       const category = categoryMatch && categoryMatch[1] ? categoryMatch[1].trim() : 'Activity';
 
-      const descriptionMatch = chunk.match(/\)\s*-\s*([^-\n\r]*)/);
+      const descriptionMatch = firstLine.match(/\)\s*-\s*([^-\n\r]*)/);
       const description = descriptionMatch && descriptionMatch[1] ? descriptionMatch[1].trim() : '';
       
       const costString = parseValue(fullActivityText, 'Cost');
@@ -78,4 +83,3 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
 
   return days;
 }
-
