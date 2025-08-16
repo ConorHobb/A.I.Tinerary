@@ -50,7 +50,10 @@ const itineraryPrompt = ai.definePrompt({
 {{#if accessibilityNeeds}}- **Accessibility Needs:** {{accessibilityNeeds}}{{/if}}
 
 **Your Task:**
-Generate a detailed itinerary in Markdown format. For each day, provide a title and a list of activities. For each activity, you MUST include the following details, even if you have to make a reasonable estimate:
+Generate a detailed itinerary in Markdown format. For each day, provide a title and a list of activities. For each activity, you MUST include the following details.
+
+**Crucially, all information you provide must be factual and verifiable. Do not invent information. If you cannot find specific information (like opening hours or exact cost), provide a realistic estimate and explicitly state that it is an estimate (e.g., "Estimated Cost", "Hours may vary").**
+
 - A short, engaging description.
 - The category of the activity (e.g., Food, Sightseeing, Museum, Shopping, Outdoor, Entertainment).
 - Estimated cost in USD.
