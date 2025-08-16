@@ -1,9 +1,10 @@
+
 import type { ItineraryDay, Activity } from './types';
 
 function parseValue(text: string, key: string): string {
     const regex = new RegExp(`\\*\\*${key}:\\*\\*\\s*([^\\*\\n\\r]*)`);
     const match = text.match(regex);
-    return match ? match[1].trim() : '';
+    return match && match[1] ? match[1].trim() : '';
 }
 
 function parseCost(costString: string): number {
@@ -41,10 +42,10 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
       const name = nameMatch[1].trim();
       
       const categoryMatch = chunk.match(/\((.*?)\)/);
-      const category = categoryMatch ? categoryMatch[1].trim() : 'Activity';
+      const category = categoryMatch && categoryMatch[1] ? categoryMatch[1].trim() : 'Activity';
 
       const descriptionMatch = chunk.match(/\)\s*-\s*([^-\n\r]*)/);
-      const description = descriptionMatch ? descriptionMatch[1].trim() : '';
+      const description = descriptionMatch && descriptionMatch[1] ? descriptionMatch[1].trim() : '';
       
       const costString = parseValue(fullActivityText, 'Cost');
       const cost = parseCost(costString);
@@ -77,3 +78,4 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
 
   return days;
 }
+
