@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'WanderWise',
+  title: 'A.I.Tinerary',
   description: 'Your AI-powered travel itinerary generator',
 };
 
