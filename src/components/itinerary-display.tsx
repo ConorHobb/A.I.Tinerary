@@ -29,7 +29,7 @@ export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryD
       <div className="lg:col-span-2">
         <div className="mb-6">
           <h2 className="font-headline text-4xl font-bold">Your Trip to {itinerary.destination}</h2>
-          <p className="text-muted-foreground text-lg">{itinerary.days.length}-day custom itinerary</p>
+          <p className="text-muted-foreground text-lg">{itinerary.length}-day custom itinerary</p>
         </div>
         <Tabs defaultValue="day-1" className="w-full">
           <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 mb-4">
