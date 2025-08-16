@@ -24,7 +24,9 @@ const ItineraryInputSchema = z.object({
 export type ItineraryInput = z.infer<typeof ItineraryInputSchema>;
 
 const ItineraryOutputSchema = z.object({
-  itinerary: z.string().describe('A day-by-day itinerary for the trip.'),
+  itinerary: z
+    .string()
+    .describe('A day-by-day itinerary for the trip in Markdown format.'),
 });
 export type ItineraryOutput = z.infer<typeof ItineraryOutputSchema>;
 
@@ -36,14 +38,44 @@ const itineraryPrompt = ai.definePrompt({
   name: 'itineraryPrompt',
   input: {schema: ItineraryInputSchema},
   output: {schema: ItineraryOutputSchema},
-  prompt: `You are a travel agent specializing in creating personalized itineraries.
+  prompt: `You are an expert travel agent AI. Your task is to create a personalized, day-by-day itinerary.
 
-  Create a {{length}}-day itinerary for a trip to {{destination}}, starting on {{startDate}}.
-  The total budget for the trip is {{budget}} USD. The user has the following preferences: {{preferences}}.
-  The desired pace of the trip is {{pace}}.  {% if accessibilityNeeds %} The user has the following accessibility needs: {{accessibilityNeeds}}.{% endif %}
+**User Request:**
+- **Destination:** {{destination}}
+- **Start Date:** {{startDate}}
+- **Duration:** {{length}} days
+- **Total Budget:** \${{budget}} USD
+- **Interests & Preferences:** {{preferences}}
+- **Pace:** {{pace}}
+{{#if accessibilityNeeds}}- **Accessibility Needs:** {{accessibilityNeeds}}{{/if}}
 
-  Your itinerary MUST take into account realistic opening hours of locations.
-  The itinerary should be in markdown format, with a heading for each day, and a list of activities for each day, including estimated cost, opening hours, distance between locations, and a short description for each activity.
+**Your Task:**
+Generate a detailed itinerary in Markdown format. For each day, provide a title and a list of activities. For each activity, you MUST include the following details, even if you have to make a reasonable estimate:
+- A short, engaging description.
+- The category of the activity (e.g., Food, Sightseeing, Museum, Shopping, Outdoor, Entertainment).
+- Estimated cost in USD.
+- Realistic opening hours.
+- Estimated distance from the previous activity.
+- A rationale for why this activity was chosen based on the user's preferences.
+
+**Output Format (Strict Markdown):**
+Use this exact format. Do not deviate.
+
+## Day 1: [Day 1 Title]
+- **[Activity 1 Name]:** ([Category]) - [Description]
+  - **Cost:** $[Cost]
+  - **Opening Hours:** [Hours]
+  - **Distance:** [Distance]
+  - **Rationale:** [Rationale]
+
+- **[Activity 2 Name]:** ([Category]) - [Description]
+  - **Cost:** $[Cost]
+  - **Opening Hours:** [Hours]
+  - **Distance:** [Distance]
+  - **Rationale:** [Rationale]
+
+## Day 2: [Day 2 Title]
+... and so on for all {{length}} days.
 `,
 });
 

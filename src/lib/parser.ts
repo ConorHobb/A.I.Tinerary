@@ -1,9 +1,9 @@
 import type { ItineraryDay, Activity } from './types';
 
 function parseValue(text: string, key: string): string {
-  const regex = new RegExp(`\\*\\*${key}:\\*\\*\\s*([^\\*\\*]+)`);
-  const match = text.match(regex);
-  return match ? match[1].trim() : '';
+    const regex = new RegExp(`\\*\\*${key}:\\*\\*\\s*([^\\*\\n\\r]*)`);
+    const match = text.match(regex);
+    return match ? match[1].trim() : '';
 }
 
 function parseCost(costString: string): number {
@@ -18,7 +18,7 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
     return [];
   }
   const days: ItineraryDay[] = [];
-  const daySections = markdown.split(/##\s+/).filter(Boolean);
+  const daySections = markdown.split(/##\s+/).filter(s => s.trim());
 
   for (const section of daySections) {
     const lines = section.trim().split('\n');
@@ -30,38 +30,28 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
 
     const activities: Activity[] = [];
     
-    // Combine multi-line activity descriptions
-    const activityChunks: string[] = [];
-    let currentChunk = '';
-    for (const line of lines.slice(1)) {
-        if (line.trim().startsWith('- **') && currentChunk) {
-            activityChunks.push(currentChunk.trim());
-            currentChunk = line;
-        } else {
-            currentChunk += ` ${line}`;
-        }
-    }
-    if (currentChunk) {
-      activityChunks.push(currentChunk.trim());
-    }
+    const activityChunks = section.split(/-\s+\*\*/).filter(s => s.trim());
+    activityChunks.shift(); // Remove the day title part
 
     for (const chunk of activityChunks) {
-      const nameMatch = chunk.match(/- \*\*(.*?):\*\*/);
-      const categoryMatch = chunk.match(/\((.*?)\)/);
-
+      const fullActivityText = `- **${chunk}`;
+      
+      const nameMatch = chunk.match(/^(.*?):/);
       if (!nameMatch) continue;
-
       const name = nameMatch[1].trim();
+      
+      const categoryMatch = chunk.match(/\((.*?)\)/);
       const category = categoryMatch ? categoryMatch[1].trim() : 'Activity';
-      const descriptionMatch = chunk.match(/\)\s*-\s*([^(\*\*)]+)/);
+
+      const descriptionMatch = chunk.match(/\)\s*-\s*([^-\n\r]*)/);
       const description = descriptionMatch ? descriptionMatch[1].trim() : '';
       
-      const costString = parseValue(chunk, 'Cost');
+      const costString = parseValue(fullActivityText, 'Cost');
       const cost = parseCost(costString);
-      const openingHours = parseValue(chunk, 'Opening Hours|Hours');
-      const distance = parseValue(chunk, 'Distance');
-      const rationale = parseValue(chunk, 'Rationale');
-      const bookingUrl = parseValue(chunk, 'Booking URL');
+      const openingHours = parseValue(fullActivityText, 'Opening Hours|Hours');
+      const distance = parseValue(fullActivityText, 'Distance');
+      const rationale = parseValue(fullActivityText, 'Rationale');
+      const bookingUrl = parseValue(fullActivityText, 'Booking URL');
 
       activities.push({
         name,
