@@ -104,8 +104,8 @@ export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryD
           <CardContent>
             <div className="aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
               {showMap ? (
-                 <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Loading Map...</p></div>}>
-                    <TripMap key={mapKey} activities={mapActivities} />
+                 <Suspense key={mapKey} fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Loading Map...</p></div>}>
+                    <TripMap activities={mapActivities} />
                 </Suspense>
               ) : (
                 <div className="text-center">
