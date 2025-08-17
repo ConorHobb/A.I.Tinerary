@@ -33,7 +33,9 @@ export default function Home() {
       <header className="py-4 px-4 md:px-6 flex items-center justify-between border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <PlaneTakeoff className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold font-headline text-primary">A.I.Tinerary</h1>
+          <h1 className="text-2xl font-bold font-headline text-primary">
+            A.I.tinerary
+          </h1>
         </div>
         {itinerary && (
           <Button variant="ghost" onClick={handleReset}>

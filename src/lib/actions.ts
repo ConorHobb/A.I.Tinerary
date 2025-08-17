@@ -19,6 +19,7 @@ const generateItinerarySchema = z.object({
 export async function generateItineraryAction(input: z.infer<typeof generateItinerarySchema>) {
   const validatedInput = generateItinerarySchema.parse(input);
   const result = await generateItinerary(validatedInput);
+  console.log(result.itinerary);
   return parseItineraryMarkdown(result.itinerary);
 }
 

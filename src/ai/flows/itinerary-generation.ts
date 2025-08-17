@@ -38,8 +38,7 @@ const itineraryPrompt = ai.definePrompt({
   name: 'itineraryPrompt',
   input: {schema: ItineraryInputSchema},
   output: {schema: ItineraryOutputSchema},
-  prompt: `You are an expert travel agent AI. Your task is to create a personalized, day-by-day itinerary.
-
+  prompt: `You are an expert travel agent AI. Create a personalized, day-by-day itinerary based on user input. Generate a full and engaging schedule for each day. Be concise to save tokens.
 **User Request:**
 - **Destination:** {{destination}}
 - **Start Date:** {{startDate}}
@@ -50,35 +49,24 @@ const itineraryPrompt = ai.definePrompt({
 {{#if accessibilityNeeds}}- **Accessibility Needs:** {{accessibilityNeeds}}{{/if}}
 
 **Your Task:**
-Generate a detailed itinerary in Markdown format. For each day, provide a title and a list of activities. For each activity, you MUST include the following details.
+Generate a detailed itinerary in Markdown format. For each day, provide a title and a list of activities. Provide exactly the number of days requested. The number of activities should depend on the requested pace: generate 5-6 activities for a 'busy' pace, 4-5 for 'moderate', and 2-3 for 'relaxed'.
 
-**Crucially, all information you provide must be factual and verifiable. Do not invent information. If you cannot find specific information (like opening hours or exact cost), provide a realistic estimate and explicitly state that it is an estimate (e.g., "Estimated Cost", "Hours may vary").**
+**Output Format (Strict Markdown - Follow This Exactly):** 
+Use this exact format. Do not deviate. Ensure the daily activities support the overall budget utilization goal.
 
-- A short, engaging description.
-- The category of the activity (e.g., Food, Sightseeing, Museum, Shopping, Outdoor, Entertainment).
-- Estimated cost in USD.
-- Realistic opening hours.
-- Estimated distance from the previous activity.
-- A rationale for why this activity was chosen based on the user's preferences.
+Generate the itinerary for exactly {{length}} days. Each day section MUST start with \`## Day [Day Number]: [Day Title]\` where [Day Number] is the sequential day number (1, 2, 3, ... up to {{length}}). There should be no content before the first day header or between day sections that is not part of the activity or day structure.
+For each activity under a day header, use the following strict markdown format:
 
-**Output Format (Strict Markdown):**
-Use this exact format. Do not deviate.
+\`**Your Task:**
+Generate a personalized, day-by-day itinerary in Markdown format for {{length}} days in {{destination}}. The itinerary should consider the user's preferences ({{preferences}}), desired pace ({{pace}}), and budget (\${{budget}}). For each day, create a full and engaging schedule, packing in activities. Consider accessibility needs {{accessibilityNeeds}}.\`
 
-## Day 1: [Day 1 Title]
-- **[Activity 1 Name]:** ([Category]) - [Description]
-  - **Cost:** $[Cost]
-  - **Opening Hours:** [Hours]
-  - **Distance:** [Distance]
-  - **Rationale:** [Rationale]
+- **[Activity Name]:** ([Category]) - [Short, engaging description.]
+  - **Cost:** [Estimated cost in USD, e.g., $20 USD]
+  - **Opening Hours:** [Realistic opening hours for the activity, e.g., 9:00 AM - 5:00 PM]
+  - **Distance:** [Estimated distance from the previous activity, e.g., 1.5 km]
+  - **Rationale:** [A brief explanation of why this activity was chosen based on user preferences.]
+  - **Booking URL:** [Optional booking URL if available. Include the full URL.]
 
-- **[Activity 2 Name]:** ([Category]) - [Description]
-  - **Cost:** $[Cost]
-  - **Opening Hours:** [Hours]
-  - **Distance:** [Distance]
-  - **Rationale:** [Rationale]
-
-## Day 2: [Day 2 Title]
-... and so on for all {{length}} days.
 `,
 });
 
