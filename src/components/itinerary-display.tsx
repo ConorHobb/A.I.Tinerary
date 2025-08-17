@@ -19,6 +19,13 @@ interface ItineraryDisplayProps {
 
 export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryDisplayProps) {
   const [showMap, setShowMap] = React.useState(false);
+  
+  // Create a unique key for the map based on itinerary content.
+  // This forces a full remount if the activities change, preventing the leaflet error.
+  const mapKey = React.useMemo(() => {
+    return itinerary.days.flatMap(d => d.activities.map(a => a.name)).join(',');
+  }, [itinerary]);
+
 
   const totalCost = React.useMemo(() => {
     return itinerary.days.reduce((total, day) => {
@@ -98,7 +105,7 @@ export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryD
             <div className="aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
               {showMap ? (
                  <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Loading Map...</p></div>}>
-                    <TripMap activities={mapActivities} />
+                    <TripMap key={mapKey} activities={mapActivities} />
                 </Suspense>
               ) : (
                 <div className="text-center">

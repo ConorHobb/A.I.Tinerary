@@ -41,7 +41,11 @@ const createCustomIcon = (category: string) => {
 
 
 export default function TripMap({ activities }: { activities: Activity[] }) {
-  if (typeof window === 'undefined' || !activities || activities.length === 0) {
+  if (typeof window === 'undefined') {
+    return null; // Don't render on the server
+  }
+
+  if (!activities || activities.length === 0) {
     return <div className="flex items-center justify-center h-full bg-muted text-muted-foreground">No locations to display on map.</div>;
   }
 
