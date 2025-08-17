@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
 import {
   Card,
   CardContent,
@@ -24,6 +25,7 @@ import { DollarSign, Clock, Pin, BookOpen, RefreshCw, Loader2 } from 'lucide-rea
 import type { Activity, FullItinerary } from '@/lib/types';
 import { getCategoryIcon } from './icons';
 import { regenerateActivityAction } from '@/lib/actions';
+import { fetchImage } from '@/lib/pixabay';
 
 interface ActivityCardProps {
   activity: Activity;
@@ -44,8 +46,13 @@ export default function ActivityCard({
   const [constraints, setConstraints] = React.useState('');
   const [isRegenerating, setIsRegenerating] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [imageUrl, setImageUrl] = React.useState<string | null>(null);
 
   const CategoryIcon = getCategoryIcon(activity.category);
+
+  React.useEffect(() => {
+    fetchImage(`${activity.name} ${itinerary.destination}`).then(setImageUrl);
+  }, [activity.name, itinerary.destination]);
   
   const handleRegenerate = async () => {
     setIsRegenerating(true);
@@ -85,54 +92,70 @@ export default function ActivityCard({
 
   return (
     <>
-      <Card className="bg-white/50 border-primary/20 hover:shadow-md transition-shadow">
-        <CardHeader className="flex flex-row items-start justify-between gap-4">
-          <div>
-            <Badge variant="secondary" className="mb-2">
-              <CategoryIcon className="h-4 w-4 mr-2" />
-              {activity.category}
-            </Badge>
-            <CardTitle className="font-headline text-xl">{activity.name}</CardTitle>
-            <CardDescription>{activity.description}</CardDescription>
+      <Card className="bg-white/50 border-primary/20 hover:shadow-md transition-shadow overflow-hidden">
+        <div className="flex">
+          <div className="w-1/3 min-w-[150px] relative">
+            {imageUrl ? (
+              <Image 
+                src={imageUrl} 
+                alt={activity.name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-muted animate-pulse" />
+            )}
           </div>
-          <Button variant="outline" size="sm" onClick={() => setIsDialogOpen(true)}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Swap
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-primary" />
-              <span>Cost: ${activity.cost}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              <span>{activity.openingHours}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Pin className="h-4 w-4 text-primary" />
-              <span>{activity.distance}</span>
-            </div>
+          <div className="flex-1">
+            <CardHeader className="flex flex-row items-start justify-between gap-4">
+              <div>
+                <Badge variant="secondary" className="mb-2">
+                  <CategoryIcon className="h-4 w-4 mr-2" />
+                  {activity.category}
+                </Badge>
+                <CardTitle className="font-headline text-xl">{activity.name}</CardTitle>
+                <CardDescription>{activity.description}</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setIsDialogOpen(true)} className="flex-shrink-0">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Swap
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                  <span>Cost: ${activity.cost}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span>{activity.openingHours}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Pin className="h-4 w-4 text-primary" />
+                  <span>{activity.distance}</span>
+                </div>
+              </div>
+              {activity.rationale && (
+                <div className="mt-4 p-3 bg-primary/10 rounded-md">
+                    <p className="text-sm text-primary/80">
+                        <span className="font-bold">Why this fits your trip:</span> {activity.rationale}
+                    </p>
+                </div>
+              )}
+              {activity.bookingUrl && (
+                 <div className="mt-4">
+                    <Button asChild variant="link" className="p-0 h-auto">
+                        <a href={activity.bookingUrl} target="_blank" rel="noopener noreferrer">
+                            <BookOpen className="h-4 w-4 mr-2"/>
+                            Book or learn more
+                        </a>
+                    </Button>
+                </div>
+              )}
+            </CardContent>
           </div>
-          {activity.rationale && (
-            <div className="mt-4 p-3 bg-primary/10 rounded-md">
-                <p className="text-sm text-primary/80">
-                    <span className="font-bold">Why this fits your trip:</span> {activity.rationale}
-                </p>
-            </div>
-          )}
-          {activity.bookingUrl && (
-             <div className="mt-4">
-                <Button asChild variant="link" className="p-0 h-auto">
-                    <a href={activity.bookingUrl} target="_blank" rel="noopener noreferrer">
-                        <BookOpen className="h-4 w-4 mr-2"/>
-                        Book or learn more
-                    </a>
-                </Button>
-            </div>
-          )}
-        </CardContent>
+        </div>
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
