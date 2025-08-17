@@ -32,7 +32,7 @@ export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryD
           <p className="text-muted-foreground text-lg">{itinerary.length}-day custom itinerary</p>
         </div>
         <Tabs defaultValue="day-1" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 mb-4">
+          <TabsList className="mb-4 h-auto flex-wrap justify-start">
             {itinerary.days.map((day) => (
               <TabsTrigger key={`trigger-${day.day}`} value={`day-${day.day}`}>
                 Day {day.day}
