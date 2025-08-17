@@ -37,27 +37,26 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
     
     // Split the day's content into blocks for each activity.
     // An activity starts with a line like "- **Activity Name]:** (Category) - Description"
-    // and we split by that pattern.
-    const activityTextBlocks = section.split(/^\s*-\s*\*\*(?![A-Za-z\s]+:)/m).filter(s => s.trim());
+    // We split by looking for the start of this pattern.
+    const activityTextBlocks = section.split(/\n\s*(?=-\s*\*\*.*?\*\*)/).filter(s => s.trim() && !s.startsWith("Day "));
     
     // The first item after split is usually the day title, so we find the first real activity
-    const firstActivityIndex = activityTextBlocks.findIndex(block => !block.match(/Day\s+(\d+):/));
-    if (firstActivityIndex === -1) continue;
+    const firstActivityIndex = activityTextBlocks.findIndex(block => block.startsWith("- **"));
+    if (firstActivityIndex === -1 && !section.match(/^\s*-\s*\*\*/m) ) continue;
 
 
-    for (let i = firstActivityIndex; i < activityTextBlocks.length; i++) {
-        const block = activityTextBlocks[i];
-        const fullActivityText = `- **${block}`;
+    for (const block of activityTextBlocks) {
+        const fullActivityText = block;
       
         const activityLines = block.trim().split('\n');
       
         const firstLine = activityLines[0];
 
-        // Extracts: "Activity Name]:** (Category) - Description"
-        const nameMatch = firstLine.match(/^(.*?):/);
+        // Extracts: "- **Activity Name]:** (Category) - Description"
+        const nameMatch = firstLine.match(/-\s*\*\*(.*?):\*\*/);
         if (!nameMatch) continue;
         
-        const name = nameMatch[1].replace(/\]:\*\*$/, '').trim(); // Clean up the name
+        const name = nameMatch[1].trim(); // Clean up the name
         
         const categoryMatch = firstLine.match(/\((.*?)\)/);
         const category = categoryMatch && categoryMatch[1] ? categoryMatch[1].trim() : 'Activity';
@@ -96,3 +95,4 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
 
   return days;
 }
+
