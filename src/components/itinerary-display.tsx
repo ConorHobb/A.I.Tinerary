@@ -10,6 +10,7 @@ import { Share2, Save, FileDown, CalendarPlus, Map, Wallet, Loader2 } from 'luci
 import ActivityCard from './activity-card';
 import type { FullItinerary, Activity } from '@/lib/types';
 
+// Lazy load the TripMap component
 const TripMap = lazy(() => import('./trip-map'));
 
 interface ItineraryDisplayProps {
@@ -19,7 +20,13 @@ interface ItineraryDisplayProps {
 
 export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryDisplayProps) {
   const [showMap, setShowMap] = React.useState(false);
-  
+  const [isClient, setIsClient] = React.useState(false);
+
+  // Ensure component only renders on the client side to avoid SSR issues with Leaflet
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Create a unique key for the map based on itinerary content.
   // This forces a full remount if the activities change, preventing the leaflet error.
   const mapKey = React.useMemo(() => {
@@ -103,7 +110,7 @@ export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryD
           </CardHeader>
           <CardContent>
             <div className="aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-              {showMap ? (
+              {isClient && showMap ? (
                  <Suspense key={mapKey} fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Loading Map...</p></div>}>
                     <TripMap activities={mapActivities} />
                 </Suspense>
@@ -114,10 +121,10 @@ export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryD
                 </div>
               )}
             </div>
-            {mapActivities.length === 0 && !showMap && (
+            {isClient && mapActivities.length === 0 && !showMap && (
                <p className="text-sm text-muted-foreground mt-2">Map will be available once activities with locations are generated.</p>
             )}
-             {showMap && (
+             {isClient && showMap && (
                 <Button variant="link" onClick={() => setShowMap(false)} className="mt-2 p-0">Hide Map</Button>
             )}
           </CardContent>
