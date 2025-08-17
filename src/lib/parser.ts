@@ -3,8 +3,9 @@ import type { ItineraryDay, Activity } from './types';
 
 function parseValue(text: string, key: string): string {
     if (!text) return '';
-    // This regex looks for a key like **Cost:** and captures the value after it until the end of the line.
-    const regex = new RegExp(`\\*\\*${key}:\\*\\*\\s*([^\\n\\r]*)`);
+    // This regex looks for a key like **Cost:** or **Opening Hours:** and captures the value after it until the end of the line.
+    // It's designed to work on a single line.
+    const regex = new RegExp(`^\\s*-\\s*\\*\\*${key}:\\*\\*\\s*(.*)`, 'i');
     const match = text.match(regex);
     return match && match[1] ? match[1].trim() : '';
 }
@@ -34,56 +35,73 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
     const dayTitle = dayTitleMatch[2].trim();
 
     const activities: Activity[] = [];
-    
-    // Split the day's content into blocks for each activity.
-    // An activity starts with a line like "- **Activity Name]:** (Category) - Description"
-    // We split by looking for the start of this pattern.
-    const activityTextBlocks = section.split(/\n\s*(?=-\s*\*\*.*?\*\*)/).filter(s => s.trim() && !s.startsWith("Day "));
-    
-    // The first item after split is usually the day title, so we find the first real activity
-    const firstActivityIndex = activityTextBlocks.findIndex(block => block.startsWith("- **"));
-    if (firstActivityIndex === -1 && !section.match(/^\s*-\s*\*\*/m) ) continue;
+    let currentActivity: Partial<Activity> | null = null;
 
+    for (const line of lines.slice(1)) { // Start from the line after the day title
+      const trimmedLine = line.trim();
+      if (!trimmedLine) continue;
 
-    for (const block of activityTextBlocks) {
-        const fullActivityText = block;
-      
-        const activityLines = block.trim().split('\n');
-      
-        const firstLine = activityLines[0];
+      // Check if the line starts a new activity block
+      // e.g., "- **Louvre Museum:** (Museum) - ..."
+      const newActivityMatch = trimmedLine.match(/^- \*\*(.*?):\*\* \((.*?)\) - (.*)/);
 
-        // Extracts: "- **Activity Name]:** (Category) - Description"
-        const nameMatch = firstLine.match(/-\s*\*\*(.*?):\*\*/);
-        if (!nameMatch) continue;
+      if (newActivityMatch) {
+        // If there was a previous activity, push it to the list
+        if (currentActivity) {
+          activities.push(currentActivity as Activity);
+        }
         
-        const name = nameMatch[1].trim(); // Clean up the name
-        
-        const categoryMatch = firstLine.match(/\((.*?)\)/);
-        const category = categoryMatch && categoryMatch[1] ? categoryMatch[1].trim() : 'Activity';
-        
-        const descriptionMatch = firstLine.match(/\)\s*-\s*(.*)/);
-        const description = descriptionMatch && descriptionMatch[1] ? descriptionMatch[1].trim() : '';
-      
-        const costString = parseValue(fullActivityText, 'Cost');
-        const cost = parseCost(costString);
-        const openingHours = parseValue(fullActivityText, 'Opening Hours|Hours');
-        const distance = parseValue(fullActivityText, 'Distance');
-        const rationale = parseValue(fullActivityText, 'Rationale');
-        const bookingUrl = parseValue(fullActivityText, 'Booking URL');
+        // Start a new activity
+        currentActivity = {
+          name: newActivityMatch[1].trim(),
+          category: newActivityMatch[2].trim(),
+          description: newActivityMatch[3].trim(),
+          cost: 0,
+          openingHours: '',
+          distance: '',
+          mapPin: '',
+          rationale: '',
+          bookingUrl: undefined,
+        };
+      } else if (currentActivity) {
+        // This is a detail line for the current activity
+        const costMatch = parseValue(line, 'Cost');
+        if (costMatch) {
+          currentActivity.cost = parseCost(costMatch);
+          continue;
+        }
 
-        activities.push({
-            name,
-            category,
-            description,
-            cost,
-            openingHours,
-            distance,
-            mapPin: '', // Not provided by this AI flow
-            rationale,
-            bookingUrl: bookingUrl || undefined,
-        });
+        const hoursMatch = parseValue(line, 'Opening Hours|Hours');
+        if (hoursMatch) {
+          currentActivity.openingHours = hoursMatch;
+          continue;
+        }
+
+        const distanceMatch = parseValue(line, 'Distance');
+        if (distanceMatch) {
+          currentActivity.distance = distanceMatch;
+          continue;
+        }
+
+        const rationaleMatch = parseValue(line, 'Rationale');
+        if (rationaleMatch) {
+          currentActivity.rationale = rationaleMatch;
+          continue;
+        }
+
+        const bookingUrlMatch = parseValue(line, 'Booking URL');
+        if (bookingUrlMatch) {
+          currentActivity.bookingUrl = bookingUrlMatch;
+          continue;
+        }
+      }
     }
 
+    // Add the last activity from the loop
+    if (currentActivity) {
+      activities.push(currentActivity as Activity);
+    }
+    
     if (activities.length > 0) {
       days.push({
         day: dayNumber,
@@ -95,4 +113,3 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
 
   return days;
 }
-
