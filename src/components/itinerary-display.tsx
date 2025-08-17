@@ -11,9 +11,9 @@ import ActivityCard from './activity-card';
 import type { FullItinerary } from '@/lib/types';
 import { Skeleton } from './ui/skeleton';
 
-const TripMap = dynamic(() => import('./trip-map'), {
+const TripMapLibre = dynamic(() => import('./trip-map-libre'), {
   ssr: false,
-  loading: () => <Skeleton className="h-full w-full" />,
+  loading: () => <Skeleton className="h-96 w-full" />,
 });
 
 interface ItineraryDisplayProps {
@@ -99,16 +99,14 @@ export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryD
             <CardTitle className="flex items-center gap-2 font-headline"><Map /> Mini-Map</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-              {showMap ? (
-                 <TripMap activities={mapActivities} />
+             {showMap ? (
+                 <TripMapLibre activities={mapActivities} />
               ) : (
-                <div className="text-center">
+                <div className="text-center aspect-video bg-muted rounded-lg flex flex-col items-center justify-center">
                   <p className="mb-4 text-muted-foreground">See your itinerary on a map.</p>
                   <Button onClick={() => setShowMap(true)}>Show Map</Button>
                 </div>
               )}
-            </div>
             {mapActivities.length === 0 && !showMap && (
                <p className="text-sm text-muted-foreground mt-2">Map will be available once activities with locations are generated.</p>
             )}
