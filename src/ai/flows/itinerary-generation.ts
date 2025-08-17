@@ -51,7 +51,7 @@ const itineraryPrompt = ai.definePrompt({
 **Your Task:**
 Generate a detailed itinerary in Markdown format. For each day, provide a title and a list of activities. Provide exactly the number of days requested. The number of activities should depend on the requested pace: generate 6-7 activities for a 'busy' pace, 4-5 for 'moderate', and 2-3 for 'relaxed'.
 
-**Output Format (Strict Markdown - Follow This Exactly):** 
+**Output Format (Strict Markdown - Follow This Exactly):**
 Use this exact format. Do not deviate. Ensure the daily activities support the overall budget utilization goal.
 
 Generate the itinerary for exactly {{length}} days. Each day section MUST start with \`## Day [Day Number]: [Day Title]\` where [Day Number] is the sequential day number (1, 2, 3, ... up to {{length}}). There should be no content before the first day header or between day sections that is not part of the activity or day structure.
@@ -64,6 +64,7 @@ Generate a personalized, day-by-day itinerary in Markdown format for {{length}} 
   - **Cost:** [Estimated cost in USD, e.g., $20 USD]
   - **Opening Hours:** [Realistic opening hours for the activity, e.g., 9:00 AM - 5:00 PM]
   - **Distance:** [Estimated distance from the previous activity, e.g., 1.5 km]
+  - **Coordinates:** [Latitude,Longitude for the activity, e.g., 48.8584,2.2945]
   - **Rationale:** [A brief explanation of why this activity was chosen based on user preferences.]
   - **Booking URL:** [Optional booking URL if available. Include the full URL.]
 

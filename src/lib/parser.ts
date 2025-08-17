@@ -17,6 +17,19 @@ function parseCost(costString: string): number {
   return match ? parseFloat(match[0]) : 0;
 }
 
+function parseCoordinates(coordString: string): { lat: number; lng: number } {
+  if (!coordString) return { lat: 0, lng: 0 };
+  const parts = coordString.split(',').map(s => s.trim());
+  if (parts.length === 2) {
+    const lat = parseFloat(parts[0]);
+    const lng = parseFloat(parts[1]);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      return { lat, lng };
+    }
+  }
+  return { lat: 0, lng: 0 };
+}
+
 
 export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
   if (!markdown) {
@@ -62,6 +75,8 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
           mapPin: '',
           rationale: '',
           bookingUrl: undefined,
+          lat: 0,
+          lng: 0,
         };
       } else if (currentActivity) {
         // This is a detail line for the current activity
@@ -80,6 +95,14 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
         const distanceMatch = parseValue(line, 'Distance');
         if (distanceMatch) {
           currentActivity.distance = distanceMatch;
+          continue;
+        }
+        
+        const coordMatch = parseValue(line, 'Coordinates');
+        if (coordMatch) {
+          const { lat, lng } = parseCoordinates(coordMatch);
+          currentActivity.lat = lat;
+          currentActivity.lng = lng;
           continue;
         }
 

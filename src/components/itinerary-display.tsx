@@ -1,14 +1,16 @@
 'use client';
 
 import * as React from 'react';
-import Image from 'next/image';
+import { Suspense, lazy } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Share2, Save, FileDown, CalendarPlus, Map, Wallet } from 'lucide-react';
+import { Share2, Save, FileDown, CalendarPlus, Map, Wallet, Loader2 } from 'lucide-react';
 import ActivityCard from './activity-card';
-import type { FullItinerary } from '@/lib/types';
+import type { FullItinerary, Activity } from '@/lib/types';
+
+const TripMap = lazy(() => import('./trip-map'));
 
 interface ItineraryDisplayProps {
   itinerary: FullItinerary;
@@ -16,6 +18,8 @@ interface ItineraryDisplayProps {
 }
 
 export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryDisplayProps) {
+  const [showMap, setShowMap] = React.useState(false);
+
   const totalCost = React.useMemo(() => {
     return itinerary.days.reduce((total, day) => {
       return total + day.activities.reduce((dayTotal, activity) => dayTotal + activity.cost, 0);
@@ -23,6 +27,10 @@ export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryD
   }, [itinerary]);
 
   const budgetProgress = (totalCost / itinerary.budget) * 100;
+  
+  const mapActivities = React.useMemo(() => 
+    itinerary.days.flatMap(day => day.activities).filter(activity => activity.lat !== 0 && activity.lng !== 0)
+  , [itinerary]);
 
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -87,17 +95,24 @@ export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryD
             <CardTitle className="flex items-center gap-2 font-headline"><Map /> Mini-Map</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-                <Image
-                    src="https://placehold.co/600x400/ebf4ff/2e9afe"
-                    data-ai-hint="map city"
-                    alt="Map of destination"
-                    width={600}
-                    height={400}
-                    className="w-full h-full object-cover"
-                />
+            <div className="aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+              {showMap ? (
+                 <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Loading Map...</p></div>}>
+                    <TripMap activities={mapActivities} />
+                </Suspense>
+              ) : (
+                <div className="text-center">
+                  <p className="mb-4 text-muted-foreground">See your itinerary on a map.</p>
+                  <Button onClick={() => setShowMap(true)}>Show Map</Button>
+                </div>
+              )}
             </div>
-            <p className="text-sm text-muted-foreground mt-2">Activity locations will be marked here.</p>
+            {mapActivities.length === 0 && !showMap && (
+               <p className="text-sm text-muted-foreground mt-2">Map will be available once activities with locations are generated.</p>
+            )}
+             {showMap && (
+                <Button variant="link" onClick={() => setShowMap(false)} className="mt-2 p-0">Hide Map</Button>
+            )}
           </CardContent>
         </Card>
          <Card>

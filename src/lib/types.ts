@@ -8,6 +8,8 @@ export interface Activity {
   mapPin: string;
   bookingUrl?: string;
   rationale: string;
+  lat: number;
+  lng: number;
 }
 
 export interface ItineraryDay {
