@@ -1,6 +1,7 @@
 'use client';
 
-import { TileLayer, Marker, Popup, useMap, MapContainer } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import type { Activity } from '@/lib/types';
 import { LatLngExpression, LatLngBounds, divIcon } from 'leaflet';
 import ReactDOMServer from 'react-dom/server';
@@ -41,8 +42,6 @@ const createCustomIcon = (category: string) => {
 
 
 export default function TripMap({ activities }: { activities: Activity[] }) {
-  // This component will only be rendered on the client, so no need for `isClient` state here.
-  
   if (!activities || activities.length === 0) {
     return <div className="flex items-center justify-center h-full bg-muted text-muted-foreground">No locations to display on map.</div>;
   }
@@ -56,9 +55,9 @@ export default function TripMap({ activities }: { activities: Activity[] }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {activities.map((activity) => (
+      {activities.map((activity, index) => (
         <Marker 
-            key={`${activity.name}-${activity.lat}-${activity.lng}`} // More unique key
+            key={`${activity.name}-${index}`}
             position={[activity.lat, activity.lng]}
             icon={createCustomIcon(activity.category)}
         >

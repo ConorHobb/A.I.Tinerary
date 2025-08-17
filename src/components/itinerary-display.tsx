@@ -8,14 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Share2, Save, FileDown, CalendarPlus, Map, Wallet, Loader2 } from 'lucide-react';
 import ActivityCard from './activity-card';
-import type { FullItinerary, Activity } from '@/lib/types';
+import type { FullItinerary } from '@/lib/types';
 
-// Dynamically import TripMap with SSR disabled. This is a robust way to prevent
-// Leaflet from trying to initialize on the server or during server-side hydration.
 const TripMap = dynamic(() => import('./trip-map'), { 
   ssr: false,
   loading: () => (
-    <div className="flex items-center justify-center h-full w-full">
+    <div className="flex items-center justify-center h-full w-full bg-muted rounded-lg">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
       <p className="ml-2">Loading Map...</p>
     </div>
@@ -39,7 +37,7 @@ export default function ItineraryDisplay({ itinerary, setItinerary }: ItineraryD
   const budgetProgress = (totalCost / itinerary.budget) * 100;
   
   const mapActivities = React.useMemo(() => 
-    itinerary.days.flatMap(day => day.activities).filter(activity => activity.lat !== 0 && activity.lng !== 0)
+    itinerary.days.flatMap(day => day.activities).filter(activity => activity.lat && activity.lng && activity.lat !== 0 && activity.lng !== 0)
   , [itinerary]);
 
   return (

@@ -3,16 +3,14 @@ import type { ItineraryDay, Activity } from './types';
 
 function parseValue(text: string, key: string): string {
     if (!text) return '';
-    // This regex looks for a key like **Cost:** or **Opening Hours:** and captures the value after it until the end of the line.
-    // It's designed to work on a single line.
-    const regex = new RegExp(`^\\s*-\\s*\\*\\*${key}:\\*\\*\\s*(.*)`, 'i');
+    const regex = new RegExp(`^\\s*-\\s*\\*\\*${key.replace(/ /g, '\\s')}:\\*\\*\\s*(.*)`, 'i');
     const match = text.match(regex);
     return match && match[1] ? match[1].trim() : '';
 }
 
+
 function parseCost(costString: string): number {
   if (!costString) return 0;
-  // This regex finds the first number (integer or float) in the string.
   const match = costString.match(/(\d+(\.\d+)?)/);
   return match ? parseFloat(match[0]) : 0;
 }
@@ -36,7 +34,6 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
     return [];
   }
   const days: ItineraryDay[] = [];
-  // Split the markdown by day headers (## Day X: ...)
   const daySections = markdown.split(/##\s+/).filter(s => s.trim());
 
   for (const section of daySections) {
@@ -50,21 +47,17 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
     const activities: Activity[] = [];
     let currentActivity: Partial<Activity> | null = null;
 
-    for (const line of lines.slice(1)) { // Start from the line after the day title
+    for (const line of lines.slice(1)) {
       const trimmedLine = line.trim();
       if (!trimmedLine) continue;
 
-      // Check if the line starts a new activity block
-      // e.g., "- **Louvre Museum:** (Museum) - ..."
       const newActivityMatch = trimmedLine.match(/^- \*\*(.*?):\*\* \((.*?)\) - (.*)/);
 
       if (newActivityMatch) {
-        // If there was a previous activity, push it to the list
         if (currentActivity) {
           activities.push(currentActivity as Activity);
         }
         
-        // Start a new activity
         currentActivity = {
           name: newActivityMatch[1].trim(),
           category: newActivityMatch[2].trim(),
@@ -72,21 +65,20 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
           cost: 0,
           openingHours: '',
           distance: '',
-          mapPin: '',
           rationale: '',
           bookingUrl: undefined,
           lat: 0,
           lng: 0,
+          mapPin: ''
         };
       } else if (currentActivity) {
-        // This is a detail line for the current activity
         const costMatch = parseValue(line, 'Cost');
         if (costMatch) {
           currentActivity.cost = parseCost(costMatch);
           continue;
         }
 
-        const hoursMatch = parseValue(line, 'Opening Hours|Hours');
+        const hoursMatch = parseValue(line, 'Opening Hours');
         if (hoursMatch) {
           currentActivity.openingHours = hoursMatch;
           continue;
@@ -120,7 +112,6 @@ export function parseItineraryMarkdown(markdown: string): ItineraryDay[] {
       }
     }
 
-    // Add the last activity from the loop
     if (currentActivity) {
       activities.push(currentActivity as Activity);
     }

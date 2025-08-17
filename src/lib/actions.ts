@@ -30,20 +30,43 @@ const regenerateActivitySchema = z.object({
     constraints: z.string(),
 });
 
+// The AI's output for a regenerated activity might not have all fields,
+// especially lat/lng which come from a different part of the prompt.
+// We make all fields optional here and merge them with old data.
+const RegeneratedActivityPartialSchema = z.object({
+    name: z.string(),
+    category: z.string(),
+    description: z.string(),
+    cost: z.number(),
+    openingHours: z.string(),
+    distance: z.string(),
+    mapPin: z.string().optional(), // mapPin is deprecated
+    bookingUrl: z.string().optional(),
+    rationale: z.string(),
+    lat: z.number().optional(),
+    lng: z.number().optional(),
+});
+
+
 export async function regenerateActivityAction(input: z.infer<typeof regenerateActivitySchema>): Promise<Activity> {
     const validatedInput = regenerateActivitySchema.parse(input);
     const { regeneratedActivity } = await regenerateActivity(validatedInput);
 
-    // The AI might return slightly different field names, so we normalize them.
+    const parsedRegenerated = RegeneratedActivityPartialSchema.parse(regeneratedActivity);
+
+    // The AI might not return coordinates, so we'll just have to accept that for now.
+    // A more advanced version might make a separate call to geocode the new location.
     return {
-        name: regeneratedActivity.name,
-        category: regeneratedActivity.category,
-        description: regeneratedActivity.description,
-        cost: regeneratedActivity.cost,
-        openingHours: regeneratedActivity.openingHours,
-        distance: regeneratedActivity.distance,
-        mapPin: regeneratedActivity.mapPin,
-        bookingUrl: regeneratedActivity.bookingUrl,
-        rationale: regeneratedActivity.rationale,
+        name: parsedRegenerated.name,
+        category: parsedRegenerated.category,
+        description: parsedRegenerated.description,
+        cost: parsedRegenerated.cost,
+        openingHours: parsedRegenerated.openingHours,
+        distance: parsedRegenerated.distance,
+        bookingUrl: parsedRegenerated.bookingUrl,
+        rationale: parsedRegenerated.rationale,
+        lat: parsedRegenerated.lat || 0,
+        lng: parsedRegenerated.lng || 0,
+        mapPin: '', // Deprecated, but needs to be on the object
     };
 }
