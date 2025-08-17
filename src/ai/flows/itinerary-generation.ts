@@ -49,7 +49,7 @@ const itineraryPrompt = ai.definePrompt({
 {{#if accessibilityNeeds}}- **Accessibility Needs:** {{accessibilityNeeds}}{{/if}}
 
 **Your Task:**
-Generate a detailed itinerary in Markdown format. For each day, provide a title and a list of activities. Provide exactly the number of days requested. The number of activities should depend on the requested pace: generate 5-6 activities for a 'busy' pace, 4-5 for 'moderate', and 2-3 for 'relaxed'.
+Generate a detailed itinerary in Markdown format. For each day, provide a title and a list of activities. Provide exactly the number of days requested. The number of activities should depend on the requested pace: generate 6-7 activities for a 'busy' pace, 4-5 for 'moderate', and 2-3 for 'relaxed'.
 
 **Output Format (Strict Markdown - Follow This Exactly):** 
 Use this exact format. Do not deviate. Ensure the daily activities support the overall budget utilization goal.
