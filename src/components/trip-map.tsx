@@ -1,11 +1,15 @@
 'use client';
 
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import type { Activity } from '@/lib/types';
 import { LatLngExpression, LatLngBounds, divIcon } from 'leaflet';
 import ReactDOMServer from 'react-dom/server';
 import { getCategoryIcon } from './icons';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import type { MapContainerProps } from 'react-leaflet';
+import dynamic from 'next/dynamic';
+
+const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
 
 // Custom hook to fit map bounds
 const FitBounds = ({ activities }: { activities: Activity[] }) => {
@@ -41,8 +45,14 @@ const createCustomIcon = (category: string) => {
 
 
 export default function TripMap({ activities }: { activities: Activity[] }) {
-  if (typeof window === 'undefined') {
-    return null; // Don't render on the server
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (typeof window === 'undefined' || !isClient) {
+    return null;
   }
 
   if (!activities || activities.length === 0) {
@@ -51,8 +61,14 @@ export default function TripMap({ activities }: { activities: Activity[] }) {
 
   const center: LatLngExpression = activities.length > 0 ? [activities[0].lat, activities[0].lng] : [51.505, -0.09];
 
+  const mapProps: MapContainerProps = {
+    center: center,
+    zoom: 12,
+    style: { height: "100%", width: "100%" },
+  };
+
   return (
-    <MapContainer center={center} zoom={12} style={{ height: "100%", width: "100%" }}>
+    <MapContainer {...mapProps}>
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
