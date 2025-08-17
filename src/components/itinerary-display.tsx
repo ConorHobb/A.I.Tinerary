@@ -6,18 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Share2, Save, FileDown, CalendarPlus, Map, Wallet, Loader2 } from 'lucide-react';
+import { Share2, Save, FileDown, CalendarPlus, Map, Wallet } from 'lucide-react';
 import ActivityCard from './activity-card';
 import type { FullItinerary } from '@/lib/types';
+import { Skeleton } from './ui/skeleton';
 
-const TripMap = dynamic(() => import('./trip-map'), { 
+const TripMap = dynamic(() => import('./trip-map'), {
   ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-full w-full bg-muted rounded-lg">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      <p className="ml-2">Loading Map...</p>
-    </div>
-  ),
+  loading: () => <Skeleton className="h-full w-full" />,
 });
 
 interface ItineraryDisplayProps {
